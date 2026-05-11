@@ -472,15 +472,17 @@ const DetailPanel = () => {
 };
 
 const EmptyState = () => (
-  <div className="grid place-items-center py-20">
-    <div className="max-w-sm text-center">
-      <div className="mx-auto mb-4 grid size-12 place-items-center rounded-[var(--radius-lg)] border border-modos-border bg-modos-panel shadow-[var(--shadow-panel)]">
+  <div className="grid place-items-center py-16 md:py-20">
+    <div className="empty-well mx-2 max-w-md sm:mx-0">
+      <div className="mx-auto mb-4 grid size-11 place-items-center rounded-[var(--radius-lg)] border border-modos-border bg-modos-panel shadow-[var(--shadow-panel)]">
         <IconCheck className="text-modos-ok" aria-hidden />
       </div>
-      <h3 className="t-h3 text-modos-text">Nothing in this filter</h3>
-      <p className="t-body mt-2 text-modos-muted">
-        Try another risk band—or take a breath. New work lands here as soon as
-        signals cross threshold.
+      <h3 className="t-h3 font-medium text-modos-text">
+        Nothing in this filter
+      </h3>
+      <p className="t-body mx-auto mt-2 max-w-sm text-modos-muted">
+        Try another risk band—or breathe. Signals repopulate the instant they
+        clear threshold again.
       </p>
     </div>
   </div>

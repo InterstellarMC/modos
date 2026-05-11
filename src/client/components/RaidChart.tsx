@@ -98,6 +98,16 @@ export const RaidChart = ({ series }: Props) => {
         className="w-full h-auto"
         preserveAspectRatio="none"
       >
+        <rect
+          x={PAD_L}
+          y={PAD_T}
+          width={width - PAD_L - PAD_R}
+          height={height - PAD_T - PAD_B}
+          rx={6}
+          fill="rgba(17, 17, 20, 0.4)"
+          stroke="var(--color-modos-border)"
+          strokeWidth={0.75}
+        />
         {gridY.map((g, i) => (
           <g key={i}>
             <line

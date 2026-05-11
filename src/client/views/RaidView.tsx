@@ -72,7 +72,7 @@ export const RaidView = () => {
   }, [incident.status, crisis]);
 
   return (
-    <div className="mx-auto max-w-[1180px] space-y-8 px-6 py-8">
+    <div className="route-shell flex min-h-0 flex-1 flex-col space-y-8">
       <section
         className={cn(
           'panel motion-default overflow-hidden p-6 sm:p-7',
