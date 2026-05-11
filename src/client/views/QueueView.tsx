@@ -48,35 +48,41 @@ export const QueueView = () => {
   );
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,420px)] h-[calc(100vh-3.5rem)] overflow-hidden">
-      <div className="flex flex-col border-r border-modos-border">
-        <div className="px-6 pt-5 pb-3">
-          <div className="flex items-baseline justify-between mb-4">
-            <div>
-              <h1 className="text-[20px] font-semibold tracking-tight">
-                AI Triage Queue
-              </h1>
-              <p className="text-[12.5px] text-modos-muted mt-0.5">
-                MODOS scored, sorted, and explained {pending.length} pending{' '}
-                {pending.length === 1 ? 'item' : 'items'}.
+    <div className="grid h-[calc(100vh-3.25rem)] grid-cols-[minmax(0,1fr)_minmax(320px,440px)] overflow-hidden bg-modos-bg/40">
+      <div className="flex min-h-0 flex-col border-r border-modos-border bg-modos-bg">
+        <div className="shrink-0 border-b border-modos-border px-6 pb-4 pt-6">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+            <div className="min-w-0">
+              <p className="t-kicker text-modos-subtle">Triage</p>
+              <h1 className="t-h2 mt-1 text-modos-text">AI queue</h1>
+              <p className="t-body mt-1.5 max-w-xl text-modos-muted">
+                {pending.length} pending{' '}
+                {pending.length === 1 ? 'decision' : 'decisions'}. Highest
+                risk first—open the inspector to resolve.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
+                type="button"
                 onClick={() => bulkActionByLevel('low', 'approve')}
-                className="text-[12px] px-3 py-1.5 panel-inset hover:border-modos-border-strong text-modos-muted hover:text-modos-text transition"
+                className="motion-default motion-press rounded-[var(--radius-md)] border border-modos-border bg-modos-panel/50 px-3 py-2 text-[12px] font-medium text-modos-muted hover:border-modos-border-strong hover:bg-modos-panel hover:text-modos-text"
               >
-                Approve all low
+                Approve low
               </button>
               <button
+                type="button"
                 onClick={() => bulkActionByLevel('critical', 'remove')}
-                className="text-[12px] px-3 py-1.5 rounded-lg bg-modos-critical/15 border border-modos-critical/40 text-modos-critical hover:bg-modos-critical/25 transition"
+                className="motion-default motion-press rounded-[var(--radius-md)] border border-modos-critical/35 bg-modos-critical/12 px-3 py-2 text-[12px] font-medium text-modos-critical hover:bg-modos-critical/18"
               >
-                Remove all critical
+                Remove critical
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div
+            role="tablist"
+            aria-label="Queue risk filter"
+            className="inline-flex flex-wrap gap-0.5 rounded-[var(--radius-md)] border border-modos-border bg-modos-bg-elev p-1"
+          >
             {FILTERS.map((f) => {
               const count =
                 f.id === 'all'
@@ -87,16 +93,19 @@ export const QueueView = () => {
               return (
                 <button
                   key={f.id}
+                  role="tab"
+                  type="button"
+                  aria-selected={filter === f.id}
                   onClick={() => setFilter(f.id)}
                   className={cn(
-                    'text-[12px] px-2.5 py-1 rounded-md border transition',
+                    'motion-default rounded-[10px] px-2.5 py-1.5 text-[12px] font-medium',
                     filter === f.id
-                      ? 'bg-modos-panel border-modos-border-strong text-modos-text'
-                      : 'border-transparent text-modos-muted hover:text-modos-text hover:bg-modos-panel/50'
+                      ? 'bg-modos-panel text-modos-text shadow-[var(--shadow-panel)] ring-1 ring-modos-border-strong'
+                      : 'text-modos-muted hover:bg-modos-panel/40 hover:text-modos-text'
                   )}
                 >
                   {f.label}
-                  <span className="ml-1.5 text-modos-subtle tabular-nums">
+                  <span className="ml-1.5 tabular-nums text-modos-subtle">
                     {count}
                   </span>
                 </button>
@@ -104,7 +113,7 @@ export const QueueView = () => {
             })}
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-1.5">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-4">
           {pending.map((item) => (
             <QueueCard
               key={item.id}
@@ -121,6 +130,13 @@ export const QueueView = () => {
   );
 };
 
+const riskAccent: Record<RiskLevel, string> = {
+  critical: 'border-l-modos-critical',
+  high: 'border-l-modos-warn',
+  medium: 'border-l-modos-info',
+  low: 'border-l-transparent',
+};
+
 const QueueCard = ({
   item,
   selected,
@@ -135,19 +151,26 @@ const QueueCard = ({
     .slice(0, 3);
   return (
     <button
+      type="button"
       onClick={onSelect}
       className={cn(
-        'w-full text-left rounded-xl border bg-modos-panel/50 hover:bg-modos-panel transition p-3.5 group',
+        'group motion-default w-full rounded-[var(--radius-lg)] border border-modos-border bg-modos-panel/35 p-3.5 text-left',
+        'hover:border-modos-border-strong hover:bg-modos-panel/70',
+        'focus-visible:z-[1]',
+        riskAccent[item.risk.level],
+        'border-l-[3px]',
         selected
-          ? 'border-modos-border-strong ring-1 ring-modos-accent/30 bg-modos-panel'
-          : 'border-modos-border'
+          ? 'border-modos-border-strong bg-modos-panel shadow-[var(--shadow-panel)] ring-1 ring-modos-accent/20'
+          : ''
       )}
     >
       <div className="flex items-start gap-3">
         <RiskBadge level={item.risk.level} score={item.risk.score} compact />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-[11.5px] text-modos-muted">
-            <span className="font-mono">u/{item.author.username}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11.5px] text-modos-muted">
+            <span className="font-mono text-modos-muted">
+              u/{item.author.username}
+            </span>
             <span className="text-modos-subtle">·</span>
             <span>
               {item.kind === 'post' ? 'post' : 'comment'} in {item.subreddit}
@@ -163,36 +186,36 @@ const QueueCard = ({
               </>
             )}
             {item.groupId && (
-              <span className="ml-1 text-[10px] uppercase tracking-wider rounded-md px-1.5 py-0.5 bg-modos-info/12 text-modos-info">
-                grouped
+              <span className="ml-1 rounded-md bg-modos-bg-elev px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-modos-info ring-1 ring-modos-info/20">
+                Grouped
               </span>
             )}
           </div>
           {item.title && (
-            <h3 className="mt-1 text-[14px] font-medium text-modos-text leading-snug">
+            <h3 className="mt-1.5 t-h3 font-medium text-modos-text">
               {item.title}
             </h3>
           )}
-          <p className="mt-1 text-[12.5px] text-modos-muted leading-snug">
-            {truncate(item.body, 220)}
+          <p className="mt-1 line-clamp-2 text-[12.5px] leading-snug text-modos-muted">
+            {truncate(item.body, 200)}
           </p>
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
             {positive.map((s, i) => (
               <span
                 key={i}
-                className="text-[10.5px] uppercase tracking-wider rounded-md px-1.5 py-0.5 bg-modos-bg-elev border border-modos-border text-modos-muted"
+                className="rounded-md border border-modos-border bg-modos-bg-elev/90 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-modos-muted"
               >
                 {s.label}
               </span>
             ))}
             {item.risk.isLikelyFalsePositive && (
-              <span className="text-[10.5px] uppercase tracking-wider rounded-md px-1.5 py-0.5 bg-modos-ok/12 text-modos-ok">
-                likely false positive
+              <span className="rounded-md bg-modos-ok/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-modos-ok ring-1 ring-modos-ok/20">
+                Likely benign
               </span>
             )}
           </div>
         </div>
-        <IconArrowRight className="text-modos-subtle opacity-0 group-hover:opacity-100 transition mt-1" />
+        <IconArrowRight className="mt-1 shrink-0 text-modos-subtle opacity-0 transition-opacity duration-[var(--dur-fast)] group-hover:opacity-100" />
       </div>
     </button>
   );
@@ -205,14 +228,14 @@ const DetailPanel = () => {
 
   if (!item) {
     return (
-      <div className="grid place-items-center text-modos-muted text-[13px] p-10">
-        <div className="text-center max-w-xs">
-          <div className="size-12 rounded-full bg-modos-panel border border-modos-border mx-auto grid place-items-center mb-3">
-            <IconWand className="text-modos-accent" />
+      <div className="grid place-items-center border-l border-modos-border bg-modos-bg-elev/35 p-10 text-modos-muted">
+        <div className="max-w-[280px] text-center">
+          <div className="mx-auto mb-4 grid size-11 place-items-center rounded-[var(--radius-lg)] border border-modos-border bg-modos-panel shadow-[var(--shadow-panel)]">
+            <IconWand className="text-modos-accent" aria-hidden />
           </div>
-          <p>
-            Select an item to see MODOS reasoning, generate a response, and act
-            in one click.
+          <p className="t-body text-modos-muted">
+            Select a row to open the inspector—reasoning, removal draft, and
+            actions stay in one column.
           </p>
         </div>
       </div>
@@ -225,25 +248,26 @@ const DetailPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-5 py-4 border-b border-modos-border flex items-start justify-between gap-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden border-l border-modos-border bg-modos-bg">
+      <header className="flex shrink-0 items-start justify-between gap-4 border-b border-modos-border px-5 py-5">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             <RiskBadge level={item.risk.level} score={item.risk.score} />
-            <span className="text-[11px] text-modos-muted">
-              confidence {(item.risk.confidence * 100).toFixed(0)}%
+            <span className="rounded-md bg-modos-bg-elev px-2 py-0.5 font-mono text-[11px] text-modos-muted tabular-nums ring-1 ring-modos-border">
+              {(item.risk.confidence * 100).toFixed(0)}% confidence
             </span>
           </div>
-          <h2 className="text-[15px] font-semibold leading-snug">
+          <h2 className="t-h3 text-[15px] font-semibold leading-snug text-modos-text">
             {item.title ?? `Comment by u/${item.author.username}`}
           </h2>
-          <div className="text-[11.5px] text-modos-muted mt-1 flex items-center gap-2 flex-wrap">
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-modos-muted">
             <button
+              type="button"
               onClick={() => {
                 setSelectedUser(item.author.username);
                 setView('memory');
               }}
-              className="font-mono hover:text-modos-text transition"
+              className="motion-default rounded-md font-mono text-modos-muted underline-offset-2 hover:bg-modos-bg-elev hover:text-modos-text"
             >
               u/{item.author.username}
             </button>
@@ -261,18 +285,18 @@ const DetailPanel = () => {
           </div>
         </div>
         <button
+          type="button"
           onClick={() => setSelectedItem(null)}
-          className="p-1 text-modos-muted hover:text-modos-text rounded-md hover:bg-modos-panel transition"
+          aria-label="Close inspector"
+          className="motion-default rounded-[var(--radius-md)] p-2 text-modos-muted hover:bg-modos-panel hover:text-modos-text"
         >
           <IconX />
         </button>
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-        <section className="panel-inset p-3.5">
-          <p className="text-[13.5px] leading-snug text-modos-text">
-            {item.body}
-          </p>
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
+        <section className="panel-inset p-4 shadow-[var(--shadow-panel)]">
+          <p className="t-body text-modos-text">{item.body}</p>
           {item.reportReasons.length > 0 && (
             <div className="mt-3 pt-3 border-t border-modos-border text-[11.5px] text-modos-muted">
               <div className="text-modos-text font-medium text-[11px] uppercase tracking-wider mb-1.5">
@@ -292,53 +316,56 @@ const DetailPanel = () => {
           )}
         </section>
 
-        <section>
-          <div className="flex items-baseline justify-between mb-2">
-            <h3 className="text-[11px] uppercase tracking-[0.16em] text-modos-muted">
-              MODOS Reasoning
-            </h3>
-            <span className="text-[11px] text-modos-subtle">
-              recommends <strong className="text-modos-text">{item.risk.recommendedAction}</strong>
+        <section className="rounded-[var(--radius-lg)] border border-modos-border bg-modos-panel/30 p-4 shadow-[var(--shadow-panel)]">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="t-kicker text-modos-subtle">Reasoning</h3>
+            <span className="text-[11.5px] text-modos-muted">
+              Suggested{' '}
+              <span className="font-medium text-modos-text">
+                {item.risk.recommendedAction}
+              </span>
             </span>
           </div>
-          <p className="text-[13px] text-modos-text mb-3 leading-snug">
-            <span className="text-modos-accent font-medium">
+          <p className="mb-4 t-body text-modos-text">
+            <span className="font-medium text-modos-text">
               {item.risk.primaryReason}
             </span>{' '}
-            drives the score. {item.risk.isLikelyFalsePositive
-              ? 'However, trust signals suggest this may be a false positive — review carefully.'
-              : 'Action recommended based on the combined signal weight below.'}
+            {item.risk.isLikelyFalsePositive
+              ? 'Trust signals lean benign—confirm before you remove.'
+              : 'Weighted evidence below supports the score.'}
           </p>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {item.risk.signals.map((s, i) => {
               const positive = s.weight > 0;
               return (
                 <div
                   key={i}
-                  className="grid grid-cols-[1fr_auto_56px] items-center gap-3 text-[12px]"
+                  className="grid grid-cols-[1fr_auto_52px] items-center gap-3 rounded-[var(--radius-md)] border border-modos-border/70 bg-modos-bg-elev/50 px-2.5 py-2 text-[12px]"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex min-w-0 items-center gap-2.5">
                     <span
                       className={cn(
-                        'size-1.5 rounded-full shrink-0',
+                        'size-1.5 shrink-0 rounded-full',
                         positive ? 'bg-modos-warn' : 'bg-modos-ok'
                       )}
                     />
                     <div className="min-w-0">
-                      <div className="truncate text-modos-text">{s.label}</div>
-                      <div className="truncate text-modos-subtle text-[11px]">
+                      <div className="truncate font-medium text-modos-text">
+                        {s.label}
+                      </div>
+                      <div className="truncate text-[11px] leading-snug text-modos-subtle">
                         {s.evidence}
                       </div>
                     </div>
                   </div>
-                  <div className="font-mono text-modos-muted tabular-nums">
+                  <div className="font-mono text-[11px] text-modos-muted tabular-nums">
                     {positive ? '+' : ''}
                     {s.weight.toFixed(2)}
                   </div>
-                  <div className="h-1 rounded-full bg-modos-border overflow-hidden">
+                  <div className="h-1 overflow-hidden rounded-full bg-modos-border">
                     <div
                       className={cn(
-                        'h-full rounded-full',
+                        'h-full rounded-full motion-default',
                         positive ? 'bg-modos-warn' : 'bg-modos-ok'
                       )}
                       style={{
@@ -353,20 +380,23 @@ const DetailPanel = () => {
         </section>
 
         <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[11px] uppercase tracking-[0.16em] text-modos-muted">
-              Removal Assistant
-            </h3>
-            <div className="flex items-center gap-1 text-[11px]">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="t-kicker text-modos-subtle">Removal assistant</h3>
+            <div
+              className="inline-flex rounded-[var(--radius-md)] border border-modos-border bg-modos-bg-elev p-0.5"
+              role="group"
+              aria-label="Draft tone"
+            >
               {(['firm', 'neutral', 'friendly'] as const).map((t) => (
                 <button
                   key={t}
+                  type="button"
                   onClick={() => generateDraft(item.id, t)}
                   className={cn(
-                    'px-2 py-0.5 rounded-md border capitalize transition',
+                    'motion-default rounded-[10px] px-2.5 py-1 text-[11px] font-medium capitalize',
                     tone === t && draft
-                      ? 'border-modos-border-strong text-modos-text bg-modos-panel'
-                      : 'border-transparent text-modos-muted hover:text-modos-text'
+                      ? 'bg-modos-panel text-modos-text shadow-[var(--shadow-panel)] ring-1 ring-modos-border-strong'
+                      : 'text-modos-muted hover:text-modos-text'
                   )}
                 >
                   {t}
@@ -376,32 +406,35 @@ const DetailPanel = () => {
           </div>
           {!draft ? (
             <button
+              type="button"
               onClick={() => generateDraft(item.id, 'neutral')}
-              className="w-full panel-inset hover:border-modos-border-strong transition p-3 text-left text-[12.5px] text-modos-muted hover:text-modos-text relative overflow-hidden scanline"
+              className="sheen-hover motion-default motion-press w-full rounded-[var(--radius-md)] border border-modos-border bg-modos-bg-elev p-3.5 text-left text-[12.5px] text-modos-muted hover:border-modos-border-strong hover:text-modos-text"
             >
-              <div className="flex items-center gap-2">
-                <IconWand className="text-modos-accent" />
-                Generate a polished removal response in one click.
+              <div className="relative z-[1] flex items-center gap-2.5">
+                <IconWand className="shrink-0 text-modos-accent" aria-hidden />
+                <span>Generate a removal-ready reply and mod note.</span>
               </div>
             </button>
           ) : (
-            <div className="panel-inset p-3.5 space-y-2.5 fade-in">
-              <p className="text-[13px] text-modos-text leading-snug whitespace-pre-line">
+            <div className="panel-inset space-y-3 p-4 fade-in shadow-[var(--shadow-panel)]">
+              <p className="t-body whitespace-pre-line text-modos-text">
                 {draft.publicReply}
               </p>
-              <div className="flex items-center gap-2 text-[11px] text-modos-muted">
+              <div className="flex flex-wrap items-center gap-2 text-[11px] text-modos-muted">
                 <span className="font-mono">{draft.modlogNote}</span>
                 <button
+                  type="button"
                   onClick={() => {
                     void navigator.clipboard?.writeText(draft.publicReply);
                   }}
-                  className="ml-auto text-modos-info hover:text-modos-text"
+                  className="motion-default ml-auto font-medium text-modos-info hover:text-modos-text"
                 >
                   Copy
                 </button>
                 <button
+                  type="button"
                   onClick={() => clearDraft()}
-                  className="text-modos-muted hover:text-modos-text"
+                  className="motion-default font-medium text-modos-muted hover:text-modos-text"
                 >
                   Reset
                 </button>
@@ -411,40 +444,45 @@ const DetailPanel = () => {
         </section>
       </div>
 
-      <div className="border-t border-modos-border p-3.5 flex items-center gap-2 bg-modos-bg-elev">
+      <footer className="flex shrink-0 items-center gap-2 border-t border-modos-border bg-modos-bg-elev/90 p-3.5 backdrop-blur-sm">
         <button
+          type="button"
           onClick={() => onAction('approve')}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-modos-ok/15 text-modos-ok hover:bg-modos-ok/25 transition text-[13px] font-medium"
+          className="motion-default motion-press flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-modos-ok/12 py-2.5 text-[13px] font-semibold text-modos-ok ring-1 ring-modos-ok/25 hover:bg-modos-ok/18"
         >
           <IconCheck /> Approve
         </button>
         <button
+          type="button"
           onClick={() => onAction('escalate')}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-modos-info/15 text-modos-info hover:bg-modos-info/25 transition text-[13px] font-medium"
+          className="motion-default motion-press flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-modos-info/12 py-2.5 text-[13px] font-semibold text-modos-info ring-1 ring-modos-info/25 hover:bg-modos-info/18"
         >
           <IconUser /> Escalate
         </button>
         <button
+          type="button"
           onClick={() => onAction('remove')}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-modos-critical/15 text-modos-critical hover:bg-modos-critical/25 transition text-[13px] font-medium"
+          className="motion-default motion-press flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-modos-critical/12 py-2.5 text-[13px] font-semibold text-modos-critical ring-1 ring-modos-critical/30 hover:bg-modos-critical/18"
         >
           <IconX /> Remove
         </button>
-      </div>
+      </footer>
     </div>
   );
 };
 
 const EmptyState = () => (
-  <div className="grid place-items-center py-24">
-    <div className="text-center max-w-sm">
-      <div className="size-12 rounded-full bg-modos-panel border border-modos-border mx-auto grid place-items-center mb-3">
-        <IconCheck className="text-modos-ok" />
+  <div className="grid place-items-center py-16 md:py-20">
+    <div className="empty-well mx-2 max-w-md sm:mx-0">
+      <div className="mx-auto mb-4 grid size-11 place-items-center rounded-[var(--radius-lg)] border border-modos-border bg-modos-panel shadow-[var(--shadow-panel)]">
+        <IconCheck className="text-modos-ok" aria-hidden />
       </div>
-      <h3 className="text-[14px] text-modos-text">Queue is clear</h3>
-      <p className="text-[12.5px] text-modos-muted mt-1">
-        MODOS will surface new items here the moment a signal crosses
-        threshold.
+      <h3 className="t-h3 font-medium text-modos-text">
+        Nothing in this filter
+      </h3>
+      <p className="t-body mx-auto mt-2 max-w-sm text-modos-muted">
+        Try another risk band—or breathe. Signals repopulate the instant they
+        clear threshold again.
       </p>
     </div>
   </div>
