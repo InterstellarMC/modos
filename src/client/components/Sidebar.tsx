@@ -8,8 +8,7 @@ import {
   IconMemory,
 } from '../lib/icons';
 import type { ComponentType, SVGProps } from 'react';
-
-type View = 'overview' | 'queue' | 'raid' | 'rules' | 'memory';
+import type { View } from '../state/store';
 
 type NavItem = {
   id: View;
@@ -23,6 +22,7 @@ export const Sidebar = () => {
   const view = useStore((s) => s.view);
   const queue = useStore((s) => s.queue);
   const incident = useStore((s) => s.incident);
+  const aiChecksPerSec = useStore((s) => s.aiChecksPerSec);
 
   const pending = queue.filter((q) => q.status === 'pending').length;
   const critical = queue.filter(
@@ -50,46 +50,40 @@ export const Sidebar = () => {
   ];
 
   return (
-    <aside className="flex w-[240px] shrink-0 flex-col border-r border-modos-border bg-modos-bg">
-      <div className="border-b border-modos-border/80 px-5 pb-5 pt-6">
-        <div className="flex items-center gap-3">
-          <div className="relative grid size-8 shrink-0 place-items-center rounded-[var(--radius-md)] border border-modos-border-strong bg-modos-panel shadow-[var(--shadow-panel)]">
-            <div className="size-6 rounded-[6px] bg-gradient-to-br from-modos-accent to-orange-800/95" />
+    <aside className="w-[232px] shrink-0 border-r border-modos-border bg-modos-bg-elev flex flex-col">
+      <div className="px-5 pt-5 pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="relative size-7 rounded-lg bg-gradient-to-br from-modos-accent to-orange-700 grid place-items-center shadow-[0_0_24px_-6px_rgba(255,69,0,0.7)]">
+            <div className="size-2.5 rounded-sm bg-white/95" />
           </div>
-          <div className="min-w-0 leading-tight">
-            <div className="truncate text-[15px] font-semibold tracking-tight text-modos-text">
-              MODOS
-            </div>
-            <div className="t-kicker mt-1 text-[10px] tracking-[0.12em] text-modos-subtle">
+          <div className="leading-tight">
+            <div className="text-[15px] font-semibold tracking-tight">MODOS</div>
+            <div className="text-[10.5px] uppercase tracking-[0.14em] text-modos-subtle">
               Moderation OS
             </div>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-px px-2.5 py-3">
+      <nav className="flex-1 px-2.5 py-2 space-y-0.5">
         {items.map((item) => {
           const Icon = item.icon;
           const active = view === item.id;
           return (
             <button
               key={item.id}
-              type="button"
               onClick={() => setView(item.id)}
               className={cn(
-                'group motion-default relative flex w-full items-center gap-2.5 rounded-[var(--radius-md)] py-2 pr-2 text-[13px] font-medium text-left',
+                'group w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[13px] transition-colors',
                 active
-                  ? 'bg-modos-panel pl-3 text-modos-text shadow-[var(--shadow-panel)] ring-1 ring-modos-border-strong sm:pl-3.5'
-                  : 'border border-transparent pl-2.5 text-modos-muted hover:border-modos-border hover:bg-modos-bg-elev hover:text-modos-text'
+                  ? 'bg-modos-panel text-modos-text border border-modos-border-strong'
+                  : 'text-modos-muted hover:text-modos-text hover:bg-modos-panel/50 border border-transparent'
               )}
             >
-              {active ? (
-                <span className="absolute left-1.5 top-1/2 hidden h-[18px] w-px -translate-y-1/2 bg-modos-accent sm:block" />
-              ) : null}
               <Icon
                 className={cn(
-                  'shrink-0 transition-colors duration-[var(--dur-fast)]',
-                  active ? 'text-modos-text' : 'text-modos-subtle group-hover:text-modos-muted'
+                  'shrink-0',
+                  active ? 'text-modos-accent' : 'text-modos-muted'
                 )}
               />
               <span className="flex-1 text-left">{item.label}</span>
@@ -105,7 +99,7 @@ export const Sidebar = () => {
                   {item.id === 'queue' && critical > 0 ? critical : item.badge}
                 </span>
               )}
-              <span className="hidden kbd opacity-0 transition-opacity duration-[var(--dur-fast)] group-hover:inline-block group-hover:opacity-100">
+              <span className="hidden group-hover:inline-block kbd">
                 {item.shortcut}
               </span>
             </button>
@@ -113,20 +107,19 @@ export const Sidebar = () => {
         })}
       </nav>
 
-      <div className="px-3 pb-4">
-        <div className="rounded-[var(--radius-md)] border border-modos-border bg-modos-panel/40 p-3.5 shadow-[var(--shadow-panel)]">
-          <div className="flex items-center gap-2 mb-1 text-[11.5px] font-medium text-modos-text">
+      <div className="px-3 pb-3">
+        <div className="panel-inset p-3 text-[11.5px] text-modos-muted leading-snug">
+          <div className="flex items-center gap-1.5 mb-1.5 text-modos-text font-medium">
             <span
-              className="size-1.5 shrink-0 rounded-full bg-modos-ok"
-              aria-hidden
+              className="size-1.5 rounded-full text-modos-ok pulse-dot"
+              style={{ background: 'var(--color-modos-ok)' }}
             />
-            <span>Engine</span>
-            <span className="ml-auto rounded-md bg-modos-bg-elev px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-modos-muted">
-              v0.1
-            </span>
+            <span>MODOS Engine</span>
           </div>
-          <p className="text-[11.5px] leading-relaxed text-modos-muted">
-            Local inference · deterministic checks in this playground.
+          <p>
+            Reasoning v0.1 ·{' '}
+            <span className="font-mono tabular-nums">{aiChecksPerSec}</span>{' '}
+            checks/s · local
           </p>
         </div>
       </div>

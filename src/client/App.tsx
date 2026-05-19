@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import {
   initApp,
   setPaletteOpen,
+  startTelemetry,
+  stopTelemetry,
   useKeyboardShortcuts,
   useStore,
 } from './state/store';
@@ -9,6 +11,7 @@ import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { Toasts } from './components/Toasts';
 import { CommandPalette } from './components/CommandPalette';
+import { CinematicOverlay } from './components/CinematicOverlay';
 import { OverviewView } from './views/OverviewView';
 import { QueueView } from './views/QueueView';
 import { RaidView } from './views/RaidView';
@@ -24,6 +27,11 @@ export const App = () => {
     void initApp();
   }, []);
 
+  useEffect(() => {
+    startTelemetry();
+    return () => stopTelemetry();
+  }, []);
+
   return (
     <div className="min-h-screen gradient-bg flex">
       <Sidebar />
@@ -35,6 +43,7 @@ export const App = () => {
       </div>
       <CommandPalette />
       <Toasts />
+      <CinematicOverlay />
       <CommandHint />
     </div>
   );
@@ -66,7 +75,8 @@ const Loading = () => (
 
 const CommandHint = () => {
   const palette = useStore((s) => s.paletteOpen);
-  if (palette) return null;
+  const cinematic = useStore((s) => s.cinematicActive);
+  if (palette || cinematic) return null;
   return (
     <button
       onClick={() => setPaletteOpen(true)}
