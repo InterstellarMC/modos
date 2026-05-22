@@ -3,6 +3,7 @@ import { cn } from '../lib/cn';
 import { formatDuration, formatNumber } from '../lib/format';
 import { setView, useStore } from '../state/store';
 import { Sparkline } from '../components/Sparkline';
+import { ActivityFeed } from '../components/ActivityFeed';
 import {
   IconArrowRight,
   IconBolt,
@@ -17,7 +18,8 @@ export const OverviewView = () => {
   const queue = useStore((s) => s.queue);
   const username = useStore((s) => s.username);
   const subreddit = useStore((s) => s.subreddit);
-  const top = queue.slice(0, 5);
+  const aiChecksPerSec = useStore((s) => s.aiChecksPerSec);
+  const top = queue.filter((q) => q.status === 'pending').slice(0, 5);
 
   const weekly = overview.weeklyVolume.map((d) => d.total);
 
@@ -69,8 +71,8 @@ export const OverviewView = () => {
         />
         <Metric
           label="Reasoning engine"
-          value="0.1"
-          delta="local · 0 ms latency"
+          value={`${aiChecksPerSec}`}
+          delta="checks/s · local · 0 ms latency"
           icon={<IconBolt className="text-modos-warn" />}
         />
       </div>
@@ -174,55 +176,58 @@ export const OverviewView = () => {
         </div>
       </div>
 
-      <div className="panel p-5">
-        <div className="flex items-baseline justify-between mb-4">
-          <div>
-            <h2 className="text-[14px] font-semibold tracking-tight">
-              Highest-risk items
-            </h2>
-            <p className="text-[11.5px] text-modos-muted mt-0.5">
-              MODOS prioritized 5 items that need a decision now.
-            </p>
-          </div>
-          <button
-            onClick={() => setView('queue')}
-            className="flex items-center gap-1.5 text-[12px] text-modos-muted hover:text-modos-text transition"
-          >
-            Open queue
-            <IconArrowRight />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 gap-1.5">
-          {top.map((q) => (
+      <div className="grid grid-cols-3 gap-4">
+        <div className="panel p-5 col-span-2">
+          <div className="flex items-baseline justify-between mb-4">
+            <div>
+              <h2 className="text-[14px] font-semibold tracking-tight">
+                Highest-risk items
+              </h2>
+              <p className="text-[11.5px] text-modos-muted mt-0.5">
+                MODOS prioritized {top.length} items that need a decision now.
+              </p>
+            </div>
             <button
-              key={q.id}
-              onClick={() => {
-                setView('queue');
-              }}
-              className="text-left rounded-lg border border-modos-border bg-modos-bg-elev/60 hover:bg-modos-panel transition p-3 grid grid-cols-[80px_1fr_120px_24px] gap-3 items-center"
+              onClick={() => setView('queue')}
+              className="flex items-center gap-1.5 text-[12px] text-modos-muted hover:text-modos-text transition"
             >
-              <RiskBadge level={q.risk.level} score={q.risk.score} compact />
-              <div className="min-w-0">
-                <div className="text-[13px] text-modos-text truncate">
-                  {q.title ?? q.body.slice(0, 80)}
-                </div>
-                <div className="text-[11.5px] text-modos-muted truncate">
-                  u/{q.author.username} · {q.risk.primaryReason}
-                </div>
-              </div>
-              <div className="text-right">
-                <Sparkline
-                  data={Array.from({ length: 8 }, (_, i) =>
-                    Math.sin((q.risk.score + i) * 1.4) * 4 + q.risk.score * 8 + i
-                  )}
-                  width={100}
-                  height={28}
-                />
-              </div>
-              <IconArrowRight className="text-modos-subtle" />
+              Open queue
+              <IconArrowRight />
             </button>
-          ))}
+          </div>
+          <div className="grid grid-cols-1 gap-1.5">
+            {top.map((q) => (
+              <button
+                key={q.id}
+                onClick={() => {
+                  setView('queue');
+                }}
+                className="text-left rounded-lg border border-modos-border bg-modos-bg-elev/60 hover:bg-modos-panel transition p-3 grid grid-cols-[80px_1fr_120px_24px] gap-3 items-center"
+              >
+                <RiskBadge level={q.risk.level} score={q.risk.score} compact />
+                <div className="min-w-0">
+                  <div className="text-[13px] text-modos-text truncate">
+                    {q.title ?? q.body.slice(0, 80)}
+                  </div>
+                  <div className="text-[11.5px] text-modos-muted truncate">
+                    u/{q.author.username} · {q.risk.primaryReason}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <Sparkline
+                    data={Array.from({ length: 8 }, (_, i) =>
+                      Math.sin((q.risk.score + i) * 1.4) * 4 + q.risk.score * 8 + i
+                    )}
+                    width={100}
+                    height={28}
+                  />
+                </div>
+                <IconArrowRight className="text-modos-subtle" />
+              </button>
+            ))}
+          </div>
         </div>
+        <ActivityFeed />
       </div>
     </div>
   );

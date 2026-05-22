@@ -1,6 +1,6 @@
-import { setPaletteOpen, useStore } from '../state/store';
+import { setPaletteOpen, startCinematic, useStore } from '../state/store';
 import { cn } from '../lib/cn';
-import { IconSearch, IconBolt, IconCommand } from '../lib/icons';
+import { IconSearch, IconBolt, IconCommand, IconPlay } from '../lib/icons';
 import { formatNumber } from '../lib/format';
 
 export const Topbar = () => {
@@ -10,6 +10,7 @@ export const Topbar = () => {
   const subscribers = useStore((s) => s.overview.subreddit.subscribers);
   const modCount = useStore((s) => s.overview.subreddit.modCount);
   const online = useStore((s) => s.online);
+  const cinematicActive = useStore((s) => s.cinematicActive);
 
   const statusBadge =
     incidentStatus === 'critical'
@@ -57,6 +58,16 @@ export const Topbar = () => {
       </div>
 
       <div className="flex items-center gap-2">
+        {!cinematicActive && (
+          <button
+            onClick={() => startCinematic()}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 panel-inset hover:border-modos-border-strong text-[12px] text-modos-muted hover:text-modos-text transition"
+            title="Play cinematic demo"
+          >
+            <IconPlay width={12} height={12} className="text-modos-accent" />
+            <span>Demo</span>
+          </button>
+        )}
         <button
           onClick={() => setPaletteOpen(true)}
           className="flex items-center gap-2 px-3 py-1.5 panel-inset hover:border-modos-border-strong text-[12.5px] text-modos-muted hover:text-modos-text transition"

@@ -8,8 +8,7 @@ import {
   IconMemory,
 } from '../lib/icons';
 import type { ComponentType, SVGProps } from 'react';
-
-type View = 'overview' | 'queue' | 'raid' | 'rules' | 'memory';
+import type { View } from '../state/store';
 
 type NavItem = {
   id: View;
@@ -23,6 +22,7 @@ export const Sidebar = () => {
   const view = useStore((s) => s.view);
   const queue = useStore((s) => s.queue);
   const incident = useStore((s) => s.incident);
+  const aiChecksPerSec = useStore((s) => s.aiChecksPerSec);
 
   const pending = queue.filter((q) => q.status === 'pending').length;
   const critical = queue.filter(
@@ -116,7 +116,11 @@ export const Sidebar = () => {
             />
             <span>MODOS Engine</span>
           </div>
-          <p>Reasoning engine v0.1 · all checks running locally</p>
+          <p>
+            Reasoning v0.1 ·{' '}
+            <span className="font-mono tabular-nums">{aiChecksPerSec}</span>{' '}
+            checks/s · local
+          </p>
         </div>
       </div>
     </aside>
